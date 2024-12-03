@@ -1,0 +1,174 @@
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class Main extends Frame {
+    // Data structures to hold user data, products, and cart items
+    private static Map<String, String[]> users = new HashMap<>(); // username -> {password, email}
+    private static List<String[]> products = new ArrayList<>(); // {id, name, price}
+    private static List<String[]> cart = new ArrayList<>(); // List of products in cart
+
+    private static String loggedInUser = null; // Logged-in user
+
+    private TextField usernameField, passwordField, emailField, productIdField;
+    private TextArea displayArea;
+    private Button loginButton, registerButton, viewProductsButton, addToCartButton, viewCartButton;
+
+    public Main() {
+        setTitle("Shopping System");
+        setSize(500, 400);
+        setLayout(new FlowLayout());
+
+        // Fields
+        usernameField = new TextField(20);
+        passwordField = new TextField(20);
+        passwordField.setEchoChar('*');
+        emailField = new TextField(20);
+        productIdField = new TextField(10);
+
+        // Buttons
+        loginButton = new Button("Login");
+        registerButton = new Button("Register");
+        viewProductsButton = new Button("View Products");
+        addToCartButton = new Button("Add to Cart");
+        viewCartButton = new Button("View Cart");
+
+        // TextArea for displaying information
+        displayArea = new TextArea(10, 40);
+        displayArea.setEditable(false);
+
+        // Add components to the frame
+        add(new Label("Username:"));
+        add(usernameField);
+        add(new Label("Password:"));
+        add(passwordField);
+        add(new Label("Email:"));
+        add(emailField);
+        add(registerButton);
+        add(loginButton);
+        add(viewProductsButton);
+        add(new Label("Product ID to Add to Cart:"));
+        add(productIdField);
+        add(addToCartButton);
+        add(viewCartButton);
+        add(displayArea);
+
+        // Button actions
+        registerButton.addActionListener(new RegisterAction());
+        loginButton.addActionListener(new LoginAction());
+        viewProductsButton.addActionListener(new ViewProductsAction());
+        addToCartButton.addActionListener(new AddToCartAction());
+        viewCartButton.addActionListener(new ViewCartAction());
+
+        // Initialize product list (you can modify this part to use dynamic input)
+        populateProductList();
+
+        // Set window visible
+        setVisible(true);
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+                System.exit(0);
+            }
+        });
+    }
+
+    private void populateProductList() {
+        // Adding some static products (id, name, price)
+        products.add(new String[] {"1", "Laptop", "800.00"});
+        products.add(new String[] {"2", "Smartphone", "400.00"});
+        products.add(new String[] {"3", "Headphones", "50.00"});
+    }
+
+    // Action for Register Button
+    private class RegisterAction implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            String username = usernameField.getText();
+            String password = passwordField.getText();
+            String email = emailField.getText();
+
+            // Storing user data in a Map (username -> {password, email})
+            users.put(username, new String[]{password, email});
+            displayArea.setText("Registration successful.\n");
+        }
+    }
+
+    // Action for Login Button
+    private class LoginAction implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            String username = usernameField.getText();
+            String password = passwordField.getText();
+
+            if (users.containsKey(username) && users.get(username)[0].equals(password)) {
+                loggedInUser = username;
+                displayArea.setText("Login successful. Welcome, " + username + "\n");
+            } else {
+                displayArea.setText("Invalid credentials.\n");
+            }
+        }
+    }
+
+    // Action for View Products Button
+    private class ViewProductsAction implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            StringBuilder productsList = new StringBuilder("Product List:\n");
+            for (String[] product : products) {
+                productsList.append(product[0]) // ID
+                        .append(": ").append(product[1]) // Name
+                        .append(" - $").append(product[2]) // Price
+                        .append("\n");
+            }
+            displayArea.setText(productsList.toString());
+        }
+    }
+
+    // Action for Add to Cart Button
+    private class AddToCartAction implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            if (loggedInUser == null) {
+                displayArea.setText("Please login to add products to the cart.\n");
+                return;
+            }
+
+            String productId = productIdField.getText();
+
+            for (String[] product : products) {
+                if (product[0].equals(productId)) {
+                    cart.add(product); // Add product to cart
+                    displayArea.setText("Product added to cart: " + product[1] + "\n");
+                    return;
+                }
+            }
+            displayArea.setText("Product not found.\n");
+        }
+    }
+
+    // Action for View Cart Button
+    private class ViewCartAction implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            if (loggedInUser == null) {
+                displayArea.setText("Please login to view the cart.\n");
+                return;
+            }
+
+            if (cart.isEmpty()) {
+                displayArea.setText("Your cart is empty.\n");
+            } else {
+                StringBuilder cartList = new StringBuilder("Shopping Cart:\n");
+                for (String[] product : cart) {
+                    cartList.append(product[0]) // ID
+                            .append(": ").append(product[1]) // Name
+                            .append(" - $").append(product[2]) // Price
+                            .append("\n");
+                }
+                displayArea.setText(cartList.toString());
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        new Main();
+    }
+}
